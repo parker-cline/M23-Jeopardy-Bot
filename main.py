@@ -3,7 +3,7 @@
 # This program is dedicated to the public domain under the CC0 license.
 
 import logging, random, sqlite3
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
 from sqlalchemy import create_engine, MetaData, Table, text, select, func
 from sqlalchemy.orm import Session
@@ -56,13 +56,38 @@ def select_random(engine):
 
 select_random(engine)
 
-def start(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id,
-                             text="Welcome to Jeopardy!")
 
+def start(update, context) -> None:
+    """Send a message when the command /start is issued."""
+    user = update.effective_user
+    update.message.reply_markdown_v2(
+        fr'Hi {user.mention_markdown_v2()}\!',
+        reply_markup=ForceReply(selective=True),
+    )
+
+
+def help(update, context) -> None:
+    """Send a message when the command /help is issued."""
+    update.message.reply_text('Help!')
+
+
+def unknown(update, context):
+    context.bot.send_message(chat_id=update.effective_chat.id,
+                             text="Sorry, I didn't understand that command.")
 
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
 
+help_handler = CommandHandler("help", help)
+dispatcher.add_handler(help_handler)
+
+unknown_handler = MessageHandler(Filters.command, unknown)
+dispatcher.add_handler(unknown_handler)
+
+# Start the Bot
 updater.start_polling()
+
+# Run the bot until you press Ctrl-C or the process receives SIGINT,
+# SIGTERM or SIGABRT. This should be used most of the time, since
+# start_polling() is non-blocking and will stop the bot gracefully.
 updater.idle()
