@@ -39,28 +39,37 @@ categories = Table("categories", metadata, autoload_with=engine)
 classifications = Table("classifications", metadata, autoload_with=engine)
 
 
-# TODO: move to unit_test.py
-def test_select(engine):
-    with engine.connect() as conn:
-        stmt = select(clues).where(clues.c.id == 10000)
-        print(conn.execute(stmt).first())
-
 def random_clue(engine):
     with engine.connect() as conn:
+
         stmt_num_rows = select(func.count('*')).select_from(clues)
         num_rows = conn.execute(stmt_num_rows).first()[0]
         random_id = random.randint(1, num_rows)
-        stmt = select(documents).where(documents.c.id == random_id)
-        return conn.execute(stmt).first()
+
+        stmt_clue = select(documents).where(documents.c.id == random_id)
+        clue = conn.execute(stmt_clue).first()
+
+        stmt_category = select(categories.c.category).select_from(
+            categories.join(
+                classifications,
+                categories.c.id == classifications.c.category_id).join(
+                    documents,
+                    classifications.c.clue_id == documents.c.id)).where(
+                        documents.c.id == random_id)
+        category = conn.execute(stmt_category).first()
+        return clue, category
+
 
 def start(update, context) -> None:
     """Send a message when the command /start is issued."""
     user = update.effective_user
 
+
 def getclue(update, context) -> None:
-    clue = random_clue(engine)
+    clue, category = random_clue(engine)
     context.bot.send_message(chat_id=update.effective_chat.id,
-                             text=clue[1])
+                             text=(category[0] + ": " + clue[1]))
+
 
 def help(update, context) -> None:
     """Send a message when the command /help is issued."""
@@ -70,6 +79,7 @@ def help(update, context) -> None:
 def unknown(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id,
                              text="Sorry, I didn't understand that command.")
+
 
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
