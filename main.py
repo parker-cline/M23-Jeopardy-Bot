@@ -6,6 +6,8 @@ import logging, random, sqlite3
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, inspect, text
+from dotenv import load_dotenv
+load_dotenv()
 
 # Enable logging
 logging.basicConfig(
@@ -17,36 +19,19 @@ import os.path
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 db_path = os.path.join(BASE_DIR, "clues.db")
+API_KEY = os.getenv('API_KEY')
 
-updater = Updater(token='#', use_context=True)
+updater = Updater(token=API_KEY, use_context=True)
 dispatcher = updater.dispatcher
 
+engine = create_engine('sqlite:///{}'.format(db_path), echo=True, future=True)
 
-def create_connection(db_file):
-    """ create a database connection to the SQLite database
-        specified by the db_file
-    :param db_file: database file
-    :return: Connection object or None
-    """
-    conn = None
-    conn = sqlite3.connect(db_file)
-    return conn
+def test_select(engine):
+    with engine.connect() as conn:
+        result = conn.execute(text("select * from clues where id = 10000"))
+        return result.all()
 
-
-def test_select(conn):
-    """
-    Query tasks by priority
-    :param conn: the Connection object
-    :param priority:
-    :return:
-    """
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM clues where id = 10000")
-    print(cur.fetchone())
-    return cur.fetchone() is not None
-
-conn = create_connection(db_path)
-print(test_select(conn))
+print(test_select(engine))
 
 
 def start(update, context):
