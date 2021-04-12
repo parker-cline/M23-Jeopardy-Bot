@@ -45,26 +45,22 @@ def test_select(engine):
         stmt = select(clues).where(clues.c.id == 10000)
         print(conn.execute(stmt).first())
 
-def select_random(engine):
+def random_clue(engine):
     with engine.connect() as conn:
         stmt_num_rows = select(func.count('*')).select_from(clues)
         num_rows = conn.execute(stmt_num_rows).first()[0]
         random_id = random.randint(1, num_rows)
         stmt = select(documents).where(documents.c.id == random_id)
-        print(conn.execute(stmt).first())
-
-
-select_random(engine)
-
+        return conn.execute(stmt).first()
 
 def start(update, context) -> None:
     """Send a message when the command /start is issued."""
     user = update.effective_user
-    update.message.reply_markdown_v2(
-        fr'Hi {user.mention_markdown_v2()}\!',
-        reply_markup=ForceReply(selective=True),
-    )
 
+def getclue(update, context) -> None:
+    clue = random_clue(engine)
+    context.bot.send_message(chat_id=update.effective_chat.id,
+                             text=clue[1])
 
 def help(update, context) -> None:
     """Send a message when the command /help is issued."""
@@ -80,6 +76,9 @@ dispatcher.add_handler(start_handler)
 
 help_handler = CommandHandler("help", help)
 dispatcher.add_handler(help_handler)
+
+getclue_handler = CommandHandler("getclue", getclue)
+dispatcher.add_handler(getclue_handler)
 
 unknown_handler = MessageHandler(Filters.command, unknown)
 dispatcher.add_handler(unknown_handler)
