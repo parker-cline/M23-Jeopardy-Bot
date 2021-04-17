@@ -57,7 +57,7 @@ def random_clue(engine):
                     classifications.c.clue_id == documents.c.id)).where(
                         documents.c.id == random_id)
         category = conn.execute(stmt_category).first()
-        return clue, category
+        return category[0], clue[1], clue[2]
 
 
 def start(update, context) -> None:
@@ -66,9 +66,17 @@ def start(update, context) -> None:
 
 
 def getclue(update, context) -> None:
-    clue, category = random_clue(engine)
+    category, clue, answer = random_clue(engine)
     context.bot.send_message(chat_id=update.effective_chat.id,
-                             text=(category[0] + ": " + clue[1]))
+                             text=(category + ": " + clue))
+    context.bot_data["answer"] = answer
+    print(answer)
+
+
+def check_answer(update, context):
+    if context.bot_data["answer"] and update.message.text == context.bot_data["answer"]:
+        context.bot.send_message(chat_id=update.effective_chat.id,
+                             text="You got it.")
 
 
 def help(update, context) -> None:
@@ -89,6 +97,9 @@ dispatcher.add_handler(help_handler)
 
 getclue_handler = CommandHandler("getclue", getclue)
 dispatcher.add_handler(getclue_handler)
+
+check_answer_handler = MessageHandler(Filters.text & (~Filters.command), check_answer)
+dispatcher.add_handler(check_answer_handler)
 
 unknown_handler = MessageHandler(Filters.command, unknown)
 dispatcher.add_handler(unknown_handler)
