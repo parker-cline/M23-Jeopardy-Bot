@@ -2,11 +2,9 @@
 # -*- coding: utf-8 -*-
 # This program is dedicated to the public domain under the MIT license.
 
-import logging, random, sqlite3
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ForceReply
+import random
 from telegram.ext import CommandHandler, MessageHandler, Filters
-from sqlalchemy import create_engine, MetaData, Table, text, select, func
-from sqlalchemy.orm import Session
+from sqlalchemy import select, func
 
 from __init__ import engine, dispatcher, updater
 from models import clues, airdates, classifications, documents, categories

@@ -1,8 +1,6 @@
-import logging, random, sqlite3
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ForceReply
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
-from sqlalchemy import create_engine, MetaData, Table, text, select, func
-from sqlalchemy.orm import Session
+import logging
+from telegram.ext import Updater
+from sqlalchemy import create_engine, MetaData
 from dotenv import load_dotenv
 
 load_dotenv()

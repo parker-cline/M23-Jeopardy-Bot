@@ -1,4 +1,5 @@
-from __init__ import Table, metadata, engine
+from __init__ import metadata, engine
+from sqlalchemy import Table
 
 clues = Table("clues", metadata, autoload_with=engine)
 airdates = Table("airdates", metadata, autoload_with=engine)
