@@ -74,9 +74,10 @@ def getclue(update, context) -> None:
 
 
 def check_answer(update, context):
-    if context.bot_data["answer"] and update.message.text == context.bot_data["answer"]:
+    if context.bot_data["answer"] and update.message.text.lower() == context.bot_data["answer"].lower():
         context.bot.send_message(chat_id=update.effective_chat.id,
                              text="You got it.")
+    context.bot_data["answer"] = None
 
 
 def help(update, context) -> None:
